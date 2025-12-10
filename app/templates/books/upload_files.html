@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Завантажити файли — {{ book.title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Головна</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('books.detail', book_id=book.id) }}">{{ book.title }}</a></li>
+        <li class="breadcrumb-item active">Завантажити файли</li>
+      </ol>
+    </nav>
+
+    <div class="card shadow">
+      <div class="card-header bg-success text-white">
+        <h3 class="mb-0">Завантажити файли для книги</h3>
+        <p class="mb-0 mt-2">{{ book.title }}</p>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="mb-3">
+            <label class="form-label">Виберіть файл(и) книги</label>
+            <input type="file" name="files" multiple class="form-control" accept=".pdf,.epub,.mobi,.fb2">
+            <div class="form-text">Дозволені формати: PDF, EPUB, MOBI, FB2 (макс. 50 МБ кожен)</div>
+          </div>
+          
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-upload"></i> Завантажити файли
+            </button>
+            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> Скасувати
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow mt-4">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Завантажені файли</h4>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for f in book.files.all() %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong class="badge bg-info me-2">{{ f.format|upper }}</strong>
+              <span class="text-muted">{{ "%.2f"|format((f.file_size or 0) / 1024 / 1024) }} МБ</span>
+              {% if f.is_active %}
+              <span class="badge bg-success ms-2">Активний</span>
+              {% else %}
+              <span class="badge bg-secondary ms-2">Неактивний</span>
+              {% endif %}
+              <br>
+              <small class="text-muted">Завантажено: {{ f.uploaded_at.strftime('%d.%m.%Y %H:%M') if f.uploaded_at else '—' }}</small>
+            </div>
+            <form method="post" action="{{ url_for('books.delete_file', file_id=f.id) }}" onsubmit="return confirm('Видалити цей файл?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i> Видалити
+              </button>
+            </form>
+          </li>
+          {% else %}
+          <li class="list-group-item text-center text-muted">Файлів ще немає.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

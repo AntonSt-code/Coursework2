@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ author.full_name }}{% endblock %}
+{% block content %}
+<div class="row mb-4">
+  <div class="col-md-12">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Головна</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('authors.list_authors') }}">Автори</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ author.full_name }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="card shadow mb-4">
+  <div class="card-header bg-primary text-white">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="mb-0">{{ author.full_name }}</h2>
+      {% if current_user.is_authenticated and current_user.is_admin() %}
+      <div>
+        <a href="{{ url_for('authors.edit', author_id=author.id) }}" class="btn btn-light btn-sm">
+          <i class="bi bi-pencil"></i> Редагувати
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-3 text-center mb-3">
+        <div class="bg-light rounded p-4">
+          <i class="bi bi-person-circle" style="font-size: 8rem; color: #6c757d;"></i>
+        </div>
+      </div>
+      
+      <div class="col-md-9">
+        {% if author.country %}
+        <p class="mb-2">
+          <strong>Країна:</strong> <span class="badge bg-info">{{ author.country }}</span>
+        </p>
+        {% endif %}
+        
+        {% if author.birth_date %}
+        <p class="mb-2">
+          <strong>Дата народження:</strong> {{ author.birth_date.strftime('%d.%m.%Y') if author.birth_date else '—' }}
+        </p>
+        {% endif %}
+        
+        {% if author.death_date %}
+        <p class="mb-2">
+          <strong>Дата смерті:</strong> {{ author.death_date.strftime('%d.%m.%Y') }}
+        </p>
+        {% endif %}
+        
+        {% if author.bio %}
+        <hr>
+        <h4>Біографія</h4>
+        <p class="text-justify">{{ author.bio }}</p>
+        {% else %}
+        <hr>
+        <p class="text-muted fst-italic">Біографія відсутня.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow">
+  <div class="card-header bg-success text-white">
+    <h3 class="mb-0">Книги автора ({{ books|length }})</h3>
+  </div>
+  <div class="card-body">
+    {% if books %}
+    <div class="row">
+      {% for book in books %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          {% if book.cover_image_path %}
+          <img src="{{ url_for('static', filename=book.cover_image_path) }}" class="card-img-top" alt="{{ book.title }}">
+          {% else %}
+          <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+            <i class="bi bi-book" style="font-size: 3rem;"></i>
+          </div>
+          {% endif %}
+          
+          <div class="card-body">
+            <h6 class="card-title">{{ book.title }}</h6>
+            
+            <div class="mb-2">
+              <span class="text-warning">
+                {% for i in range(5) %}
+                  {% if i < book.average_rating|round|int %}★{% else %}☆{% endif %}
+                {% endfor %}
+              </span>
+              <small class="text-muted">({{ book.reviews_count }})</small>
+            </div>
+            
+            {% if book.publication_year %}
+            <p class="card-text small text-muted mb-2">
+              Рік: {{ book.publication_year }}
+            </p>
+            {% endif %}
+            
+            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-sm btn-primary">
+              Детальніше
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+      <p class="mb-0">У цього автора поки немає книг у бібліотеці.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

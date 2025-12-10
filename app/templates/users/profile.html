@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Профіль — {{ current_user.username }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-8 offset-md-2">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Профіль користувача</h3>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-4 text-end">
+            <strong>Логін:</strong>
+          </div>
+          <div class="col-md-8">
+            {{ current_user.username }}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-4 text-end">
+            <strong>Email:</strong>
+          </div>
+          <div class="col-md-8">
+            {{ current_user.email }}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-4 text-end">
+            <strong>Ім'я:</strong>
+          </div>
+          <div class="col-md-8">
+            {{ current_user.first_name or '—' }}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-4 text-end">
+            <strong>Прізвище:</strong>
+          </div>
+          <div class="col-md-8">
+            {{ current_user.last_name or '—' }}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-4 text-end">
+            <strong>Роль:</strong>
+          </div>
+          <div class="col-md-8">
+            <span class="badge bg-{{ 'danger' if current_user.role == 'admin' else 'primary' }}">
+              {{ current_user.role|upper }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-4 text-end">
+            <strong>Дата реєстрації:</strong>
+          </div>
+          <div class="col-md-8">
+            {{ current_user.created_at.strftime('%d.%m.%Y %H:%M') if current_user.created_at else '—' }}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-4 text-end">
+            <strong>Останній вхід:</strong>
+          </div>
+          <div class="col-md-8">
+            {{ current_user.last_login_at.strftime('%d.%m.%Y %H:%M') if current_user.last_login_at else '—' }}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-4 text-end">
+            <strong>Статус:</strong>
+          </div>
+          <div class="col-md-8">
+            <span class="badge bg-{{ 'success' if current_user.is_active else 'secondary' }}">
+              {{ 'Активний' if current_user.is_active else 'Неактивний' }}
+            </span>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+          <div class="col-md-4 offset-md-4">
+            <a href="{{ url_for('users.favorites') }}" class="btn btn-primary w-100 mb-2">
+              <i class="bi bi-heart-fill"></i> Обране
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card shadow mt-4">
+      <div class="card-header">
+        <h4 class="mb-0">Статистика</h4>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded">
+              <h2 class="text-primary">{{ current_user.favorites.count() }}</h2>
+              <p class="mb-0 text-muted">Обраних книг</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded">
+              <h2 class="text-success">{{ current_user.reviews.count() }}</h2>
+              <p class="mb-0 text-muted">Відгуків</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded">
+              <h2 class="text-info">{{ current_user.logs.filter_by(action='download').count() }}</h2>
+              <p class="mb-0 text-muted">Завантажень</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

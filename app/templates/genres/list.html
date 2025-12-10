@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Жанри{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Жанри книг</h1>
+  {% if current_user.is_authenticated and current_user.is_admin() %}
+  <a href="{{ url_for('genres.create') }}" class="btn btn-success">
+    <i class="bi bi-plus-circle"></i> Додати жанр
+  </a>
+  {% endif %}
+</div>
+
+<div class="row">
+  {% for g in genres %}
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">
+          <i class="bi bi-bookmark-fill text-primary"></i>
+          {{ g.name }}
+        </h5>
+        <p class="card-text text-muted">{{ g.description or 'Опис відсутній' }}</p>
+        
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="badge bg-info">{{ g.book_genres.count() }} книг</span>
+          <div>
+            <a href="{{ url_for('genres.detail', genre_id=g.id) }}" class="btn btn-sm btn-primary">
+              Переглянути
+            </a>
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <a href="{{ url_for('genres.edit', genre_id=g.id) }}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-pencil"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="alert alert-info text-center">
+      Жанрів поки немає.
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if pagination %}
+<nav class="mt-4" aria-label="Pagination">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('genres.list_all', page=pagination.prev_num) if pagination.has_prev else '#' }}">«</a>
+    </li>
+    {% for p in range(1, pagination.pages + 1) %}
+    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('genres.list_all', page=p) }}">{{ p }}</a>
+    </li>
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('genres.list_all', page=pagination.next_num) if pagination.has_next else '#' }}">»</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

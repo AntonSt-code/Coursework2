@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Помилка сервера{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 class="display-1">500</h1>
+  <h2>Внутрішня помилка сервера</h2>
+  <p class="lead">Щось пішло не так. Спробуйте пізніше.</p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-primary">На головну</a>
+</div>
+{% endblock %}

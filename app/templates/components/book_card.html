@@ -1,0 +1,39 @@
+<div class="card h-100 shadow-sm">
+  {% if book.cover_image_path %}
+  <img src="{{ url_for('static', filename=book.cover_image_path) }}" class="card-img-top" alt="{{ book.title }}">
+  {% else %}
+  <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 250px;">
+    <i class="bi bi-book" style="font-size: 3rem;"></i>
+  </div>
+  {% endif %}
+  
+  <div class="card-body d-flex flex-column">
+    <h6 class="card-title text-truncate" title="{{ book.title }}">{{ book.title }}</h6>
+    <p class="card-text small text-muted mb-2">
+      {% for ba in book.book_authors.limit(2) %}
+        {{ ba.author.full_name }}{% if not loop.last %}, {% endif %}
+      {% endfor %}
+    </p>
+    
+    <div class="mb-2">
+      <span class="text-warning">
+        {% for i in range(5) %}
+          {% if i < book.average_rating|round|int %}★{% else %}☆{% endif %}
+        {% endfor %}
+      </span>
+      <small class="text-muted">({{ book.reviews_count }})</small>
+    </div>
+    
+    <div class="mt-auto d-flex gap-2">
+      <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-sm btn-primary flex-grow-1">Детальніше</a>
+      {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('users.add_favorite', book_id=book.id) }}" class="d-inline">
+        {{ csrf_token() }}
+        <button type="submit" class="btn btn-sm btn-outline-danger" title="Додати в обране">
+          <i class="bi bi-heart"></i>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>

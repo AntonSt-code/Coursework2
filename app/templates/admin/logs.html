@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Логи активності{% endblock %}
+
+{% block extra_css %}
+<style>
+.log-action-download { color: #28a745; }
+.log-action-login { color: #007bff; }
+.log-action-register { color: #6f42c1; }
+.log-action-logout { color: #6c757d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">
+  <i class="bi bi-activity"></i> Логи активності
+</h1>
+
+<!-- Статистика -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <i class="bi bi-journal-text text-primary" style="font-size: 2rem;"></i>
+        <h3 class="mt-2">{{ total_logs }}</h3>
+        <p class="text-muted mb-0">Всього записів</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <i class="bi bi-download text-success" style="font-size: 2rem;"></i>
+        <h3 class="mt-2">{{ downloads }}</h3>
+        <p class="text-muted mb-0">Завантажень</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <i class="bi bi-box-arrow-in-right text-info" style="font-size: 2rem;"></i>
+        <h3 class="mt-2">{{ logins }}</h3>
+        <p class="text-muted mb-0">Входів</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        <form method="post" action="{{ url_for('admin.clear_logs') }}" onsubmit="return confirm('Видалити старі логи (>90 днів)?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-trash"></i> Очистити старі
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ТОП-5 активних користувачів -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0"><i class="bi bi-trophy"></i> ТОП-5 активних користувачів</h5>
+  </div>
+  <div class="card-body">
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Користувач</th>
+          <th>Email</th>
+          <th>Активність</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user, count in top_users %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td><strong>{{ user.username }}</strong></td>
+          <td>{{ user.email }}</td>
+          <td><span class="badge bg-success">{{ count }} дій</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Фільтри -->
+<div class="card shadow mb-4">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="bi bi-funnel"></i> Фільтри</h5>
+  </div>
+  <div class="card-body">
+    <form method="get" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Дія</label>
+        <select name="action" class="form-select">
+          <option value="">Всі дії</option>
+          <option value="download" {% if action_filter == 'download' %}selected{% endif %}>Завантаження</option>
+          <option value="login" {% if action_filter == 'login' %}selected{% endif %}>Вхід</option>
+          <option value="register" {% if action_filter == 'register' %}selected{% endif %}>Реєстрація</option>
+          <option value="logout" {% if action_filter == 'logout' %}selected{% endif %}>Вихід</option>
+        </select>
+      </div>
+      
+      <div class="col-md-2">
+        <label class="form-label">Дата від</label>
+        <input type="date" name="date_from" class="form-control" value="{{ date_from or '' }}">
+      </div>
+      
+      <div class="col-md-2">
+        <label class="form-label">Дата до</label>
+        <input type="date" name="date_to" class="form-control" value="{{ date_to or '' }}">
+      </div>
+      
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-search"></i> Застосувати
+        </button>
+        <a href="{{ url_for('admin.logs') }}" class="btn btn-secondary">
+          <i class="bi bi-x-circle"></i> Скинути
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Таблиця логів -->
+<div class="card shadow">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-sm mb-0">
+        <thead class="table-dark">
+          <tr>
+            <th style="width: 5%;">ID</th>
+            <th style="width: 15%;">Дата/Час</th>
+            <th style="width: 12%;">Користувач</th>
+            <th style="width: 10%;">Дія</th>
+            <th style="width: 20%;">Книга</th>
+            <th style="width: 8%;">Файл</th>
+            <th style="width: 12%;">IP</th>
+            <th style="width: 18%;">User-Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in logs %}
+          <tr>
+            <td><small>{{ l.id }}</small></td>
+            <td>
+              <small>
+                <i class="bi bi-calendar"></i> {{ l.created_at.strftime('%d.%m.%Y') }}<br>
+                <i class="bi bi-clock"></i> {{ l.created_at.strftime('%H:%M:%S') }}
+              </small>
+            </td>
+            <td>
+              {% if l.user %}
+                <a href="{{ url_for('users.profile') }}" class="text-decoration-none">
+                  <i class="bi bi-person-circle"></i> {{ l.user.username }}
+                </a>
+              {% else %}
+                <span class="text-muted"><i class="bi bi-person-x"></i> Анонім</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge bg-{% if l.action == 'download' %}success{% elif l.action == 'login' %}primary{% elif l.action == 'register' %}info{% else %}secondary{% endif %}">
+                {% if l.action == 'download' %}<i class="bi bi-download"></i>
+                {% elif l.action == 'login' %}<i class="bi bi-box-arrow-in-right"></i>
+                {% elif l.action == 'register' %}<i class="bi bi-person-plus"></i>
+                {% elif l.action == 'logout' %}<i class="bi bi-box-arrow-left"></i>
+                {% endif %}
+                {{ l.action }}
+              </span>
+            </td>
+            <td>
+              {% if l.book %}
+                <a href="{{ url_for('books.detail', book_id=l.book.id) }}" class="text-decoration-none" title="{{ l.book.title }}">
+                  <i class="bi bi-book"></i> {{ l.book.title[:25] }}{% if l.book.title|length > 25 %}...{% endif %}
+                </a>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if l.file_id %}
+                <span class="badge bg-info">{{ l.file_id }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              <code class="small">{{ l.ip_address or '—' }}</code>
+            </td>
+            <td>
+              <small class="text-muted text-truncate d-inline-block" style="max-width: 200px;" title="{{ l.user_agent or '' }}">
+                {{ l.user_agent[:40] if l.user_agent else '—' }}
+              </small>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">
+              <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+              <p class="mt-2">Немає логів для відображення</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Пагінація -->
+{% if pagination and pagination.pages > 1 %}
+<nav class="mt-4" aria-label="Pagination">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('admin.logs', page=pagination.prev_num, action=action_filter, date_from=date_from, date_to=date_to) if pagination.has_prev else '#' }}">
+        <i class="bi bi-chevron-left"></i> Попередня
+      </a>
+    </li>
+    
+    {% for p in range(1, pagination.pages + 1) %}
+      {% if p == 1 or p == pagination.pages or (p >= pagination.page - 2 and p <= pagination.page + 2) %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('admin.logs', page=p, action=action_filter, date_from=date_from, date_to=date_to) }}">{{ p }}</a>
+        </li>
+      {% elif p == pagination.page - 3 or p == pagination.page + 3 %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+      {% endif %}
+    {% endfor %}
+    
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('admin.logs', page=pagination.next_num, action=action_filter, date_from=date_from, date_to=date_to) if pagination.has_next else '#' }}">
+        Наступна <i class="bi bi-chevron-right"></i>
+      </a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+
+<div class="alert alert-info mt-4">
+  <i class="bi bi-info-circle"></i>
+  <strong>Підказка:</strong> Логи автоматично створюються при завантаженні файлів, вході/виході користувачів та інших важливих діях.
+  Старі логи (>90 днів) можна видалити для оптимізації бази даних.
+</div>
+{% endblock %}

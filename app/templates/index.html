@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded">
+    <h1 class="display-4">Ласкаво просимо до електронної бібліотеки!</h1>
+    <p class="lead">Тисячі книг у вашому розпорядженні. Читайте онлайн або завантажуйте.</p>
+    <hr class="my-4">
+    <p>Знайдіть улюблені книги або відкрийте для себе щось нове.</p>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('books.catalog') }}" role="button">Переглянути каталог</a>
+</div>
+
+<h2 class="mt-5 mb-4">Останні надходження</h2>
+<div class="row">
+    {% for book in recent_books %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            {% if book.cover_image_path %}
+            <img src="{{ url_for('static', filename=book.cover_image_path) }}" class="card-img-top" alt="{{ book.title }}">
+            {% else %}
+            <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span>Без обкладинки</span>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <p class="card-text text-muted">
+                    {% for ba in book.book_authors.limit(2) %}
+                        {{ ba.author.full_name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-sm btn-primary">Детальніше</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<h2 class="mt-5 mb-4">Популярні книги</h2>
+<div class="row">
+    {% for book in popular_books %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <p class="card-text">
+                    ⭐ {{ "%.1f"|format(book.average_rating) }} ({{ book.reviews_count }} відгуків)
+                </p>
+                <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-sm btn-outline-primary">Читати</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

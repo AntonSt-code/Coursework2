@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block title %}Адміністративна панель{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Адміністративна панель</h1>
+  <div>
+    <a href="{{ url_for('books.create') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle"></i> Додати книгу
+    </a>
+    <a href="{{ url_for('authors.create') }}" class="btn btn-success">
+      <i class="bi bi-person-plus"></i> Додати автора
+    </a>
+  </div>
+</div>
+
+<div class="admin-stats mb-4">
+  <div class="row text-center">
+    <div class="col-md">
+      <div class="p-3">
+        <h2 class="display-4 mb-0">{{ stats.total_users }}</h2>
+        <p class="mb-0">Користувачів</p>
+        <a href="{{ url_for('admin.users') }}" class="text-white small">Переглянути →</a>
+      </div>
+    </div>
+    <div class="col-md border-start">
+      <div class="p-3">
+        <h2 class="display-4 mb-0">{{ stats.total_books }}</h2>
+        <p class="mb-0">Книг</p>
+        <a href="{{ url_for('books.catalog') }}" class="text-white small">Переглянути →</a>
+      </div>
+    </div>
+    <div class="col-md border-start">
+      <div class="p-3">
+        <h2 class="display-4 mb-0">{{ stats.total_authors }}</h2>
+        <p class="mb-0">Авторів</p>
+        <a href="{{ url_for('authors.list_authors') }}" class="text-white small">Переглянути →</a>
+      </div>
+    </div>
+    <div class="col-md border-start">
+      <div class="p-3">
+        <h2 class="display-4 mb-0">{{ stats.total_reviews }}</h2>
+        <p class="mb-0">Відгуків</p>
+      </div>
+    </div>
+    <div class="col-md border-start">
+      <div class="p-3">
+        <h2 class="display-4 mb-0">{{ stats.total_downloads }}</h2>
+        <p class="mb-0">Завантажень</p>
+        <a href="{{ url_for('admin.logs') }}" class="text-white small">Переглянути логи →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card shadow mb-4">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">ТОП-5 книг за завантаженнями</h4>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Назва книги</th>
+              <th class="text-center">Завантажень</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for book, downloads in top_books %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>
+                <a href="{{ url_for('books.detail', book_id=book.id) }}">{{ book.title }}</a>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-success">{{ downloads }}</span>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="3" class="text-center text-muted">Даних немає</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6">
+    <div class="card shadow mb-4">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0">Швидкі дії</h4>
+      </div>
+      <div class="card-body">
+        <div class="list-group">
+          <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            Управління користувачами
+            <span class="badge bg-primary rounded-pill">{{ stats.total_users }}</span>
+          </a>
+          <a href="{{ url_for('books.catalog') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            Управління книгами
+            <span class="badge bg-primary rounded-pill">{{ stats.total_books }}</span>
+          </a>
+          <a href="{{ url_for('authors.list_authors') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            Управління авторами
+            <span class="badge bg-primary rounded-pill">{{ stats.total_authors }}</span>
+          </a>
+          <a href="{{ url_for('genres.list_all') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            Управління жанрами
+            <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card shadow">
+      <div class="card-header bg-info text-white">
+        <h4 class="mb-0">Системна інформація</h4>
+      </div>
+      <div class="card-body">
+        <p class="mb-2"><strong>Версія:</strong> 1.0.0</p>
+        <p class="mb-2"><strong>База даних:</strong> MySQL (віддалена)</p>
+        <p class="mb-2"><strong>Backend:</strong> Flask + SQLAlchemy</p>
+        <p class="mb-0"><strong>Frontend:</strong> Bootstrap 5</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Статистика за типами дій -->
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card shadow">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Статистика активності</h5>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Тип дії</th>
+              <th>Кількість</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for action, count in action_stats %}
+            <tr>
+              <td>
+                <span class="badge bg-{% if action == 'download' %}success{% elif action == 'login' %}primary{% elif action == 'view' %}info{% else %}secondary{% endif %}">
+                  {{ action }}
+                </span>
+              </td>
+              <td><strong>{{ count }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6">
+    <div class="card shadow">
+      <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="bi bi-people"></i> ТОП-5 активних користувачів</h5>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Користувач</th>
+              <th>Активність</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user, activity in top_users %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ user.username }}</td>
+              <td><span class="badge bg-success">{{ activity }} дій</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Графік активності за тиждень -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Активність за останній тиждень</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="activityChart" height="80"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('activityChart').getContext('2d');
+const activityData = {
+    labels: [
+        {% for date, count in recent_activity %}
+        '{{ date.strftime("%d.%m") }}'{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ],
+    datasets: [{
+        label: 'Кількість дій',
+        data: [
+            {% for date, count in recent_activity %}
+            {{ count }}{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ],
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 2,
+        fill: true
+    }]
+};
+
+new Chart(ctx, {
+    type: 'line',
+    data: activityData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

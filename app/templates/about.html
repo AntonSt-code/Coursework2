@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% block title %}Про бібліотеку{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 3rem;
+}
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: white;
+}
+.stat-card {
+    transition: transform 0.3s;
+}
+.stat-card:hover {
+    transform: translateY(-10px);
+}
+.timeline {
+    position: relative;
+    padding: 2rem 0;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-3 mb-3">
+            <i class="bi bi-book-half"></i> Електронна бібліотека
+        </h1>
+        <p class="lead mb-4">Ваш доступ до світу знань — завжди і всюди</p>
+        <a href="{{ url_for('books.catalog') }}" class="btn btn-light btn-lg">
+            <i class="bi bi-collection"></i> Переглянути каталог
+        </a>
+    </div>
+</div>
+
+<!-- Про проєкт -->
+<div class="container mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h2 class="mb-4">Про наш проєкт</h2>
+            <p class="lead">
+                Електронна бібліотека — це сучасна платформа для доступу до великої колекції електронних книг 
+                української та світової літератури.
+            </p>
+            <p>
+                Ми створили цей проєкт, щоб зробити читання доступним для всіх. Незалежно від того, 
+                де ви знаходитесь — вдома, на роботі чи в дорозі — ви завжди маєте доступ до ваших 
+                улюблених книг.
+            </p>
+            <p>
+                Наша місія — популяризація читання та збереження літературної спадщини для майбутніх поколінь.
+            </p>
+        </div>
+        <div class="col-md-6">
+            <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=400&fit=crop" 
+                 alt="Бібліотека" class="img-fluid rounded shadow">
+        </div>
+    </div>
+</div>
+
+<!-- Статистика -->
+<div class="container mb-5">
+    <h2 class="text-center mb-5">Наша бібліотека в цифрах</h2>
+    <div class="row text-center">
+        <div class="col-md-3 mb-4">
+            <div class="card stat-card border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="feature-icon">
+                        <i class="bi bi-book"></i>
+                    </div>
+                    <h3 class="display-4">{{ Book.query.count() }}</h3>
+                    <p class="text-muted">Книг у каталозі</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card stat-card border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="feature-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h3 class="display-4">{{ Author.query.count() }}</h3>
+                    <p class="text-muted">Авторів</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card stat-card border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="feature-icon">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                    <h3 class="display-4">{{ User.query.count() }}</h3>
+                    <p class="text-muted">Користувачів</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card stat-card border-0 shadow h-100">
+                <div class="card-body">
+                    <div class="feature-icon">
+                        <i class="bi bi-download"></i>
+                    </div>
+                    <h3 class="display-4">{{ Log.query.filter_by(action='download').count() }}</h3>
+                    <p class="text-muted">Завантажень</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Можливості -->
+<div class="bg-light py-5 mb-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Можливості платформи</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h4>Зручний пошук</h4>
+                    <p class="text-muted">
+                        Знайдіть потрібну книгу за назвою, автором, жанром або ISBN. 
+                        Фільтри та сортування допоможуть швидко знайти те, що ви шукаєте.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-file-earmark-arrow-down"></i>
+                    </div>
+                    <h4>Різні формати</h4>
+                    <p class="text-muted">
+                        Завантажуйте книги в форматах PDF, EPUB, MOBI та FB2. 
+                        Читайте на комп'ютері, планшеті або електронній книзі.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-heart"></i>
+                    </div>
+                    <h4>Обране</h4>
+                    <p class="text-muted">
+                        Додавайте улюблені книги до обраного для швидкого доступу. 
+                        Створюйте власну колекцію книг для читання.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-star"></i>
+                    </div>
+                    <h4>Рейтинги та відгуки</h4>
+                    <p class="text-muted">
+                        Оцінюйте прочитані книги та залишайте відгуки. 
+                        Допомагайте іншим читачам зробити правильний вибір.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4>Безпека</h4>
+                    <p class="text-muted">
+                        Ваші дані захищені сучасними методами шифрування. 
+                        Ми піклуємося про вашу приватність.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <h4>Доступність</h4>
+                    <p class="text-muted">
+                        Responsive дизайн дозволяє комфортно користуватись сайтом 
+                        на будь-якому пристрої — від телефону до комп'ютера.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Технології -->
+<div class="container mb-5">
+    <h2 class="text-center mb-5">Технології, що використовуються</h2>
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-server text-primary"></i> Backend</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> Python 3.10+</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Flask 3.0 (веб-фреймворк)</li>
+                        <li><i class="bi bi-check-circle text-success"></i> SQLAlchemy (ORM)</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Flask-Login (аутентифікація)</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Flask-WTF (форми)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-palette text-warning"></i> Frontend</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> HTML5, CSS3</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Bootstrap 5</li>
+                        <li><i class="bi bi-check-circle text-success"></i> JavaScript</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Jinja2 Templates</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Bootstrap Icons</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-database text-danger"></i> База даних</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> MySQL 8.0+</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Віддалений сервер</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Flask-Migrate (міграції)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-shield-lock text-info"></i> Безпека</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> Хешування паролів (Werkzeug)</li>
+                        <li><i class="bi bi-check-circle text-success"></i> CSRF-захист</li>
+                        <li><i class="bi bi-check-circle text-success"></i> SQL Injection захист</li>
+                        <li><i class="bi bi-check-circle text-success"></i> XSS захист</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Контакти -->
+<div class="bg-primary text-white py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">Є питання?</h2>
+        <p class="lead mb-4">
+            Зв'яжіться з нами, якщо у вас виникли запитання або пропозиції щодо роботи бібліотеки.
+        </p>
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-3">
+                <i class="bi bi-envelope" style="font-size: 2rem;"></i>
+                <p class="mt-2 mb-0"><strong>Email:</strong></p>
+                <p>library@gmail.com</p>
+            </div>
+    
+            <div class="col-md-4 mb-3">
+                <i class="bi bi-mortarboard" style="font-size: 2rem;"></i>
+                <p class="mt-2 mb-0"><strong>Курсова робота</strong></p>
+                <p>База даних — 2025</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Додати книгу{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow">
+      <div class="card-header bg-success text-white">
+        <h3 class="mb-0">Додати нову книгу</h3>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {{ form.csrf_token }}
+          
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              {{ form.title.label(class="form-label") }}
+              {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+              {% if form.title.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.title.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              {{ form.original_title.label(class="form-label") }}
+              {{ form.original_title(class="form-control") }}
+              <div class="form-text">Якщо відрізняється від основної назви</div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              {{ form.authors.label(class="form-label") }}
+              {{ form.authors(class="form-select", multiple=True, size=5) }}
+              <div class="form-text">Утримуйте Ctrl для вибору кількох авторів</div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              {{ form.genres.label(class="form-label") }}
+              {{ form.genres(class="form-select", multiple=True, size=5) }}
+              <div class="form-text">Утримуйте Ctrl для вибору кількох жанрів</div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              {{ form.description.label(class="form-label") }}
+              {{ form.description(class="form-control", rows="5") }}
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.isbn.label(class="form-label") }}
+              {{ form.isbn(class="form-control") }}
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              {{ form.language.label(class="form-label") }}
+              {{ form.language(class="form-select") }}
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-8 mb-3">
+              {{ form.publisher.label(class="form-label") }}
+              {{ form.publisher(class="form-control") }}
+            </div>
+            
+            <div class="col-md-4 mb-3">
+              {{ form.publication_year.label(class="form-label") }}
+              {{ form.publication_year(class="form-control", type="number") }}
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              {{ form.cover_image.label(class="form-label") }}
+              {{ form.cover_image(class="form-control") }}
+              <div class="form-text">Формати: PNG, JPG, JPEG, GIF, WEBP</div>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-check-circle"></i> Зберегти книгу
+            </button>
+            <a href="{{ url_for('books.catalog') }}" class="btn btn-secondary">
+              <i class="bi bi-x-circle"></i> Скасувати
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="alert alert-info mt-3" role="alert">
+      <strong>Примітка:</strong> Після створення книги ви зможете додати авторів, жанри та файли на сторінці редагування.
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Головна</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('books.catalog') }}">Каталог</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ book.title }}</li>
+  </ol>
+</nav>
+
+<div class="row mb-4">
+  <div class="col-md-3">
+    {% if book.cover_image_path %}
+    <img src="{{ url_for('static', filename=book.cover_image_path) }}" class="img-fluid book-cover rounded shadow" alt="{{ book.title }}">
+    {% else %}
+    <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded shadow" style="height:400px;">
+      <div class="text-center">
+        <i class="bi bi-book" style="font-size: 5rem;"></i>
+        <p class="mt-2">Без обкладинки</p>
+      </div>
+    </div>
+    {% endif %}
+    
+    {% if current_user.is_authenticated and current_user.is_admin() %}
+    <div class="d-grid gap-2 mt-3">
+      <a href="{{ url_for('books.edit', book_id=book.id) }}" class="btn btn-primary">
+        <i class="bi bi-pencil"></i> Редагувати
+      </a>
+      <form method="post" action="{{ url_for('books.delete', book_id=book.id) }}" onsubmit="return confirm('Ви впевнені, що хочете видалити цю книгу?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger w-100">
+          <i class="bi bi-trash"></i> Видалити
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  
+  <div class="col-md-9">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <h1 class="display-5">{{ book.title }}</h1>
+      {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('users.add_favorite', book_id=book.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger">
+          <i class="bi bi-heart-fill"></i> В обране
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    
+    {% if book.original_title and book.original_title != book.title %}
+    <p class="text-muted fst-italic">Оригінальна назва: {{ book.original_title }}</p>
+    {% endif %}
+    
+    <div class="mb-3">
+      <strong>Автор(и):</strong>
+      {% for ba in book.book_authors.all() %}
+        <a href="{{ url_for('authors.detail', author_id=ba.author.id) }}" class="badge bg-primary text-decoration-none">
+          {{ ba.author.full_name }}
+        </a>
+      {% else %}
+        <span class="text-muted">Невідомо</span>
+      {% endfor %}
+    </div>
+    
+    <div class="mb-3">
+      <strong>Жанр(и):</strong>
+      {% for bg in book.book_genres.all() %}
+        <span class="badge bg-success">{{ bg.genre.name }}</span>
+      {% else %}
+        <span class="text-muted">Не вказано</span>
+      {% endfor %}
+    </div>
+    
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <p class="mb-1"><strong>Видавництво:</strong> {{ book.publisher or '—' }}</p>
+        <p class="mb-1"><strong>Рік видання:</strong> {{ book.publication_year or '—' }}</p>
+        <p class="mb-1"><strong>ISBN:</strong> {{ book.isbn or '—' }}</p>
+        <p class="mb-1"><strong>Мова:</strong> 
+          {% if book.language == 'uk' %}Українська
+          {% elif book.language == 'en' %}English
+          {% elif book.language == 'ru' %}Русский
+          {% else %}{{ book.language }}
+          {% endif %}
+        </p>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-light">
+          <div class="card-body text-center">
+            <div class="display-4 text-warning mb-2">
+              {% for i in range(5) %}
+                {% if i < book.average_rating|round|int %}★{% else %}☆{% endif %}
+              {% endfor %}
+            </div>
+            <h5 class="mb-1">{{ "%.1f"|format(book.average_rating) }} / 5.0</h5>
+            <p class="text-muted mb-0">{{ book.reviews_count }} відгуків</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <hr>
+    
+    <h4>Опис</h4>
+    <p class="text-justify">{{ book.description or 'Опис відсутній.' }}</p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow mb-4">
+  <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+    <h4 class="mb-0"><i class="bi bi-download"></i> Завантажити книгу</h4>
+    {% if current_user.is_authenticated and current_user.is_admin() %}
+    <a href="{{ url_for('books.upload_files', book_id=book.id) }}" class="btn btn-light btn-sm">
+      <i class="bi bi-plus-circle"></i> Додати файл
+    </a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% set active_files = book.files.filter_by(is_active=True).all() %}
+    {% if active_files %}
+    <div class="list-group">
+      {% for f in active_files %}
+      <div class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="mb-1">
+            <span class="badge bg-info">{{ f.format|upper }}</span>
+            Формат: {{ f.format|upper }}
+          </h6>
+          <p class="mb-0 text-muted small">
+            Розмір: {{ "%.2f"|format((f.file_size or 0) / 1024 / 1024) }} МБ
+            {% if f.uploaded_at %}
+            | Завантажено: {{ f.uploaded_at.strftime('%d.%m.%Y') }}
+            {% endif %}
+          </p>
+        </div>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('books.download', book_id=book.id, file_id=f.id) }}" class="btn btn-success">
+          <i class="bi bi-download"></i> Завантажити
+        </a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-success">
+          Увійдіть
+        </a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center" role="alert">
+      <i class="bi bi-exclamation-triangle"></i>
+      Файлів для завантаження поки немає.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card shadow">
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h4 class="mb-0"><i class="bi bi-chat-left-text"></i> Відгуки ({{ book.reviews_count }})</h4>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('reviews.create', book_id=book.id) }}" class="btn btn-light btn-sm">
+      <i class="bi bi-plus-circle"></i> Написати відгук
+    </a>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% set all_reviews = book.reviews.all() %}
+    {% if all_reviews %}
+    <div class="reviews-list">
+      {% for r in all_reviews|sort(attribute='created_at', reverse=True) %}
+      <div class="card mb-3 review-card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h6 class="mb-1">
+                <strong>{{ r.user.username }}</strong>
+                {% if r.user.is_admin() %}
+                <span class="badge bg-danger">ADMIN</span>
+                {% endif %}
+              </h6>
+              <div class="text-warning mb-1">
+                {% for i in range(5) %}
+                  {% if i < r.rating %}★{% else %}☆{% endif %}
+                {% endfor %}
+                <span class="text-dark ms-2">({{ r.rating }}/5)</span>
+              </div>
+            </div>
+            <small class="text-muted">{{ r.created_at.strftime('%d.%m.%Y') }}</small>
+          </div>
+          
+          {% if r.title %}
+          <h6 class="card-subtitle mb-2">{{ r.title }}</h6>
+          {% endif %}
+          
+          <p class="card-text">{{ r.review_text }}</p>
+          
+          {% if r.updated_at and r.updated_at != r.created_at %}
+          <small class="text-muted fst-italic">
+            Відредаговано: {{ r.updated_at.strftime('%d.%m.%Y %H:%M') }}
+          </small>
+          {% endif %}
+          
+          {% if current_user.is_authenticated and (current_user.id == r.user_id or current_user.is_admin()) %}
+          <div class="mt-3">
+            <div class="btn-group btn-group-sm" role="group">
+              <a href="{{ url_for('reviews.edit', review_id=r.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-pencil"></i> Редагувати
+              </a>
+              <form method="post" action="{{ url_for('reviews.delete', review_id=r.id) }}" class="d-inline" onsubmit="return confirm('Видалити відгук?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger">
+                  <i class="bi bi-trash"></i> Видалити
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+      <i class="bi bi-info-circle"></i>
+      Поки що немає відгуків. Будьте першим!
+      {% if current_user.is_authenticated %}
+      <br>
+      <a href="{{ url_for('reviews.create', book_id=book.id) }}" class="btn btn-primary btn-sm mt-2">
+        Написати перший відгук
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

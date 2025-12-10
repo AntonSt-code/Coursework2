@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Редагувати профіль{% endblock %}
+{% block content %}
+<h1>Редагувати профіль</h1>
+<form method="post">
+  {{ form.csrf_token }}
+  <div class="mb-3">
+    <label class="form-label">Логін</label>
+    <input type="text" class="form-control" value="{{ current_user.username }}" disabled>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Email</label>
+    <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+  </div>
+  <div class="mb-3">
+    {{ form.first_name.label(class="form-label") }}
+    {{ form.first_name(class="form-control", value=current_user.first_name) }}
+  </div>
+  <div class="mb-3">
+    {{ form.last_name.label(class="form-label") }}
+    {{ form.last_name(class="form-control", value=current_user.last_name) }}
+  </div>
+  <button class="btn btn-primary">Зберегти зміни</button>
+</form>
+{% endblock %}
